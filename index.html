@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlidesGPT Clone - AI Presentation Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-robot"></i> SlidesGPT Clone</h1>
+            <p class="subtitle">Transform your ideas into stunning presentations with AI</p>
+        </header>
+
+        <main>
+            <div class="presentation-form">
+                <form id="presentationForm" method="POST" action="{{ url_for('generate') }}">
+                    <div class="form-group">
+                        <label for="topic">Presentation Topic</label>
+                        <input type="text" id="topic" name="topic" required 
+                               placeholder="e.g., The Future of Artificial Intelligence">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="num_slides">Number of Slides</label>
+                        <div class="slide-count">
+                            <button type="button" class="count-btn" onclick="adjustSlides(-1)">-</button>
+                            <input type="number" id="num_slides" name="num_slides" value="5" min="1" max="20" required>
+                            <button type="button" class="count-btn" onclick="adjustSlides(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="style">Presentation Style</label>
+                        <select id="style" name="style">
+                            <option value="professional">Professional</option>
+                            <option value="creative">Creative</option>
+                            <option value="minimal">Minimal</option>
+                            <option value="educational">Educational</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="generate-btn">
+                        <i class="fas fa-magic"></i> Generate Presentation
+                    </button>
+                </form>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <i class="fas fa-robot"></i>
+                    <h3>AI-Powered</h3>
+                    <p>Advanced AI technology to create engaging content</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-paint-brush"></i>
+                    <h3>Beautiful Designs</h3>
+                    <p>Professional templates and layouts</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Lightning Fast</h3>
+                    <p>Generate presentations in seconds</p>
+                </div>
+            </div>
+        </main>
+
+        <div id="loading" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Creating your presentation...</p>
+        </div>
+
+        <div id="result" class="result-container" style="display: none;">
+            <div class="result-content">
+                <i class="fas fa-check-circle"></i>
+                <h2>Presentation Ready!</h2>
+                <p>Your presentation has been generated successfully.</p>
+                <a href="#" id="downloadBtn" class="download-btn">
+                    <i class="fas fa-download"></i> Download Presentation
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function adjustSlides(delta) {
+            const input = document.getElementById('num_slides');
+            const newValue = parseInt(input.value) + delta;
+            if (newValue >= 1 && newValue <= 20) {
+                input.value = newValue;
+            }
+        }
+
+        document.getElementById('presentationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const formData = new FormData(this);
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update download button with the correct URL
+                    document.getElementById('downloadBtn').href = data.download_url;
+                    
+                    // Show success message
+                    document.getElementById('result').style.display = 'flex';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error generating presentation: ' + error.message);
+            } finally {
+                // Hide loading state
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        // Handle download button click
+        document.getElementById('downloadBtn').addEventListener('click', function(e) {
+            if (!this.href || this.href === '#') {
+                e.preventDefault();
+                alert('Please generate a presentation first.');
+            }
+        });
+    </script>
+</body>
+</html> 
